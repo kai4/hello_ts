@@ -1,0 +1,77 @@
+#package.json
+yarn init -y
+
+#追加内容，到时可以直接执行：yarn run dev
+------------------------------------------------------------------------
+"scripts": {
+    "dev": "webpack --mode development && webpack serve --mode development"
+  }
+------------------------------------------------------------------------
+
+#开发环境
+yarn add webpack-cli -g
+yarn add webpack webpack-cli webpack-dev-server -D
+yarn add expose-loader ts-loader typescript -D
+
+#生产环境（发布后继续依赖）
+yarn add phaser
+
+#tsconfig.json
+tsc --init
+-------------------------------------------------------------------------
+{
+  "compilerOptions": {
+    "target": "ES6",
+    "module": "commonjs",
+    "sourceMap": false,
+    "noImplicitAny": true,
+    "strict": false
+  },
+  "include": ["src/**/*"],
+  "exclude": ["node_modules", "**/*.spec.ts"]
+}
+
+-------------------------------------------------------------------------
+
+#创建webpack.config.js
+#https://createapp.dev/
+-------------------------------------------------------------------------
+const path = require('path');
+const pathToPhaser = path.join(__dirname, '/node_modules/phaser/');
+const phaser = path.join(pathToPhaser, 'dist/phaser.js');
+
+module.exports = {
+  entry: './src/game.ts',
+  output: {
+    path: path.resolve(__dirname, 'dist'),
+    filename: 'bundle.js'
+  },
+  module: {
+    rules: [
+      {
+        test: /\.ts$/,
+        include: path.resolve(__dirname, 'src'),
+        loader: 'ts-loader'
+      },
+      {
+        test: /phaser\.js$/,
+        loader: 'expose-loader',
+        options: { exposes: { globalName: 'Phaser', override: true } }
+      }
+    ]
+  },
+  devServer: {
+    contentBase: path.resolve(__dirname, './'),
+    publicPath: '/dist/',
+    host: '127.0.0.1',
+    port: 8080,
+    open: true
+  },
+  resolve: {
+    extensions: ['.ts', '.js'],
+    alias: {
+      phaser: phaser
+    }
+  }
+};
+----------------------------------------------------------------------------
